@@ -1,20 +1,24 @@
-name: Cache Dependencies Example
+name: GitHub Actions Cache Workflow
 
 on:
-  workflow_dispatch:  # Allows manual trigger
-  push:               # Runs when you push to the repo
+  push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  cache-job:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: prime-cache-2b84cb6
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Cache pip dependencies
         id: cache-deps
         uses: actions/cache@v4
         with:
@@ -23,17 +27,11 @@ jobs:
           restore-keys: |
             cache-2b84cb6
 
-      - name: Show cache result
-        run: echo "Cache hit status: ${{ steps.cache-deps.outputs.cache-hit }}"
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests numpy
 
-      - name: Run sample script
+      - name: Show cache hit result
         run: |
-          python -c "import requests; print('Cache test successful!')"
-
-          
-
+          echo "Cache hit status: ${{ steps.cache-deps.outputs.cache-hit }}"
